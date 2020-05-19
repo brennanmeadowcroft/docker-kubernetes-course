@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t brennanmeadowcroft/docker-react -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run brennanmeadowcroft/docker-react npm test -- --coverage
+
+after_success:
+  - docker build -t brennanmeadowcroft/multi-client ./client
+  - docker build -t brennanmeadowcroft/multi-nginx ./nginx
+  - docker build -t brennanmeadowcroft/multi-server ./server
+  - docker build -t brennanmeadowcroft/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push brennanmeadowcroft/multi-client
+  - docker push brennanmeadowcroft/multi-nginx
+  - docker push brennanmeadowcroft/multi-server
+  - docker push brennanmeadowcroft/multi-worker
